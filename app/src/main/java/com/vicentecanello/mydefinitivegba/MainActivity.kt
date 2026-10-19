@@ -165,13 +165,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun carregarJogos(uri: Uri) {
+        private fun carregarJogos(uri: Uri) {
         val pasta = DocumentFile.fromTreeUri(this, uri)
         nomes.clear()
-        pasta?.listFiles()
-            ?.filter { it.isFile && (it.name ?: "").lowercase().endsWith(".gba") }
-            ?.sortedBy { (it.name ?: "").lowercase() }
-            ?.forEach { nomes.add((it.name ?: "").substringBeforeLast('.')) }
+        val arquivos = pasta?.listFiles() ?: emptyArray<DocumentFile>()
+        val encontrados = mutableListOf<String>()
+        for (arquivo in arquivos) {
+            val nome = arquivo.name ?: continue
+            if (arquivo.isFile && nome.lowercase().endsWith(".gba")) {
+                encontrados.add(nome.substringBeforeLast('.'))
+            }
+        }
+        encontrados.sortBy { nome -> nome.lowercase() }
+        nomes.addAll(encontrados)
         adaptador.notifyDataSetChanged()
         vazio.visibility = if (nomes.isEmpty()) View.VISIBLE else View.GONE
     }
