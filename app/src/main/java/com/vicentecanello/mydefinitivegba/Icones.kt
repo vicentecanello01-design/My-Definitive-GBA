@@ -59,21 +59,31 @@ class FundoGba(context: Context) : View(context) {
     private val densidade = context.resources.displayMetrics.density
 
     private val corpo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(28, 255, 255, 255)
+        color = Color.argb(18, 255, 255, 255)
         style = Paint.Style.FILL
     }
     private val contorno = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(60, 255, 255, 255)
+        color = Color.argb(38, 255, 255, 255)
         style = Paint.Style.STROKE
         strokeWidth = 3f * densidade
     }
     private val tela = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(70, 0, 0, 0)
+        color = Color.argb(50, 0, 0, 0)
         style = Paint.Style.FILL
     }
     private val detalhe = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(45, 255, 255, 255)
+        color = Color.argb(28, 255, 255, 255)
         style = Paint.Style.FILL
+    }
+
+    private fun caminhoArredondado(r: RectF, topo: Float, base: Float): android.graphics.Path {
+        val caminho = android.graphics.Path()
+        caminho.addRoundRect(
+            r,
+            floatArrayOf(topo, topo, topo, topo, base, base, base, base),
+            android.graphics.Path.Direction.CW
+        )
+        return caminho
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -81,44 +91,69 @@ class FundoGba(context: Context) : View(context) {
         val h = height.toFloat()
         canvas.drawColor(Color.parseColor("#262626"))
 
-        val bw = w * 0.94f
+        val bw = w * 0.86f
         val bh = bw / 1.76f
-        val l = (w - bw) / 2f
-        val t = h * 0.52f - bh / 2f
-        val r = l + bw
-        val b = t + bh
         val cx = w / 2f
-        val cy = (t + b) / 2f
+        val cy = h * 0.55f
+        val l = cx - bw / 2f
+        val r = cx + bw / 2f
+        val t = cy - bh / 2f
+        val b = cy + bh / 2f
+
+        canvas.save()
+        canvas.rotate(45f, cx, cy)
+
+        // botões de ombro (L e R)
+        canvas.drawRoundRect(
+            RectF(l + bw * 0.02f, t - bh * 0.05f, l + bw * 0.16f, t + bh * 0.04f),
+            bh * 0.04f, bh * 0.04f, detalhe
+        )
+        canvas.drawRoundRect(
+            RectF(r - bw * 0.16f, t - bh * 0.05f, r - bw * 0.02f, t + bh * 0.04f),
+            bh * 0.04f, bh * 0.04f, detalhe
+        )
 
         // corpo do console
-        val corpoRect = RectF(l, t, r, b)
-        canvas.drawRoundRect(corpoRect, bh * 0.2f, bh * 0.2f, corpo)
-        canvas.drawRoundRect(corpoRect, bh * 0.2f, bh * 0.2f, contorno)
+        val forma = caminhoArredondado(RectF(l, t, r, b), bh * 0.14f, bh * 0.36f)
+        canvas.drawPath(forma, corpo)
+        canvas.drawPath(forma, contorno)
 
         // moldura e tela
-        val sw = bw * 0.40f
-        val sh = sw * 0.68f
-        val moldura = RectF(cx - sw * 0.62f, cy - sh * 0.68f, cx + sw * 0.62f, cy + sh * 0.68f)
-        canvas.drawRoundRect(moldura, bh * 0.06f, bh * 0.06f, tela)
-        canvas.drawRoundRect(moldura, bh * 0.06f, bh * 0.06f, contorno)
-        canvas.drawRect(RectF(cx - sw / 2f, cy - sh / 2f, cx + sw / 2f, cy + sh / 2f), tela)
+        val moldura = RectF(cx - bw * 0.26f, cy - bh * 0.32f, cx + bw * 0.26f, cy + bh * 0.32f)
+        canvas.drawRoundRect(moldura, bh * 0.08f, bh * 0.08f, tela)
+        canvas.drawRoundRect(moldura, bh * 0.08f, bh * 0.08f, contorno)
+        canvas.drawRect(
+            RectF(cx - bw * 0.21f, cy - bh * 0.25f, cx + bw * 0.21f, cy + bh * 0.25f),
+            tela
+        )
 
         // direcional
         val dx = l + bw * 0.12f
+        val dy = cy - bh * 0.04f
         val arm = bh * 0.11f
-        val len = bh * 0.18f
-        canvas.drawRoundRect(RectF(dx - len, cy - arm / 2f, dx + len, cy + arm / 2f), arm / 3f, arm / 3f, detalhe)
-        canvas.drawRoundRect(RectF(dx - arm / 2f, cy - len, dx + arm / 2f, cy + len), arm / 3f, arm / 3f, detalhe)
+        val len = bh * 0.17f
+        canvas.drawRoundRect(
+            RectF(dx - len, dy - arm / 2f, dx + len, dy + arm / 2f),
+            arm / 3f, arm / 3f, detalhe
+        )
+        canvas.drawRoundRect(
+            RectF(dx - arm / 2f, dy - len, dx + arm / 2f, dy + len),
+            arm / 3f, arm / 3f, detalhe
+        )
 
-        // botões A e B
-        canvas.drawCircle(r - bw * 0.09f, cy - bh * 0.07f, bh * 0.085f, detalhe)
-        canvas.drawCircle(r - bw * 0.18f, cy + bh * 0.04f, bh * 0.085f, detalhe)
+        // botões A (mais alto) e B (mais baixo)
+        canvas.drawCircle(r - bw * 0.075f, cy - bh * 0.12f, bh * 0.095f, detalhe)
+        canvas.drawCircle(r - bw * 0.15f, cy + bh * 0.04f, bh * 0.095f, detalhe)
 
-        // botões pequenos embaixo da tela
-        val pw = bw * 0.07f
-        val ph = bw * 0.02f
-        val py = cy + bw * 0.22f
-        canvas.drawRoundRect(RectF(cx - bw * 0.06f - pw / 2f, py, cx - bw * 0.06f + pw / 2f, py + ph), ph, ph, detalhe)
-        canvas.drawRoundRect(RectF(cx + bw * 0.06f - pw / 2f, py, cx + bw * 0.06f + pw / 2f, py + ph), ph, ph, detalhe)
+        // Start e Select, embaixo à direita
+        val sy = cy + bh * 0.30f
+        for (sx in listOf(r - bw * 0.15f, r - bw * 0.09f)) {
+            canvas.drawRoundRect(
+                RectF(sx - bw * 0.025f, sy - bh * 0.025f, sx + bw * 0.025f, sy + bh * 0.025f),
+                bh * 0.025f, bh * 0.025f, detalhe
+            )
+        }
+
+        canvas.restore()
     }
 }
