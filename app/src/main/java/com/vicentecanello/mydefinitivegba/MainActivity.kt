@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         "https://thumbnails.libretro.com/Nintendo%20-%20Game%20Boy%20Advance/Named_Boxarts/"
 
     private lateinit var vazio: TextView
+    private lateinit var subtitulo: TextView
     private lateinit var adaptador: BaseAdapter
     private val jogos = mutableListOf<Jogo>()
     private val cacheCapas = HashMap<String, Bitmap>()
@@ -107,6 +108,30 @@ class MainActivity : AppCompatActivity() {
         // barra de cima, só com a engrenagem
         val barra = FrameLayout(this)
         barra.setBackgroundColor(Color.parseColor("#212121"))
+        val blocoTitulo = LinearLayout(this)
+        blocoTitulo.orientation = LinearLayout.VERTICAL
+        blocoTitulo.gravity = Gravity.CENTER_VERTICAL
+        blocoTitulo.setPadding(dp(16), 0, 0, 0)
+        val titulo = TextView(this)
+        titulo.text = "My Definitive GBA"
+        titulo.textSize = 20f
+        titulo.setTextColor(Color.WHITE)
+        titulo.includeFontPadding = false
+        subtitulo = TextView(this)
+        subtitulo.text = "0 jogos encontrados"
+        subtitulo.textSize = 12f
+        subtitulo.setTextColor(Color.parseColor("#AAAAAA"))
+        subtitulo.includeFontPadding = false
+        blocoTitulo.addView(titulo)
+        blocoTitulo.addView(subtitulo)
+        barra.addView(
+            blocoTitulo,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.START
+            )
+        )
         val areaEngrenagem = FrameLayout(this)
         areaEngrenagem.addView(
             IconeEngrenagem(this),
@@ -297,6 +322,7 @@ class MainActivity : AppCompatActivity() {
         }
         adaptador.notifyDataSetChanged()
         vazio.visibility = if (jogos.isEmpty()) View.VISIBLE else View.GONE
+        subtitulo.text = if (jogos.size == 1) "1 jogo encontrado" else "${jogos.size} jogos encontrados"
         buscarCapas()
     }
 
